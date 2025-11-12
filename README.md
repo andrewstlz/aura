@@ -1,5 +1,5 @@
 # aura.
-*your digital mirror, sprinkled with magic*
+*your digital mirror, sprinkled with magic*  
 AI-powered photo editing assistant integrating pre-trained computer vision models.
 
 ## how it works 🫆
