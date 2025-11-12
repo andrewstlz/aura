@@ -1,6 +1,5 @@
 # aura.
 *your digital mirror, sprinkled with magic*  
-AI-powered photo editing assistant integrating pre-trained computer vision models.
 
 ## how it works 🫆
 Aura integrates multiple pretrained computer vision models into a cohesive editing pipeline. Users input images through a web interface, select desired enhancements via natural language or UI controls, and receive processed results in real-time. The natural language command is first processed by an intent recognition model to map the request (e.g. 'make my face slimmer') to the specific Core Processing Path (e.g. face reshaping). Each module operates independently, allowing users to apply single or combined effects while maintaining interactive performance.
