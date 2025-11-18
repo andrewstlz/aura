@@ -1,8 +1,3 @@
-"""
-Skin Smoothing and Beauty Filter
-Uses edge-preserving filtering and face detection for natural-looking results
-"""
-
 import cv2
 import numpy as np
 from PIL import Image
@@ -28,7 +23,8 @@ class BeautyConfig:
     sharpen_amount: float = 0.3
     skin_tone_balance: float = 0.15
     blemish_removal: bool = True
-    
+
+
 class SkinSmoothingFilter:
     
     def __init__(self, device: str = 'cpu'):
@@ -105,17 +101,19 @@ class SkinSmoothingFilter:
             mask = cv2.dilate(mask, kernel, iterations=1)
             
             ycrcb = cv2.cvtColor(image, cv2.COLOR_BGR2YCrCb)
-            _, cr, cb = cv2.split(ycrcb)
             
-            skin_mask = cv2.inRange(ycrcb, np.array([0, 133, 77]), np.array([255, 173, 127]))
+            skin_mask = cv2.inRange(ycrcb, np.array([0, 130, 70]), np.array([255, 180, 135]))
             
             mask = cv2.bitwise_and(mask, skin_mask)
         else:
             ycrcb = cv2.cvtColor(image, cv2.COLOR_BGR2YCrCb)
-            skin_mask = cv2.inRange(ycrcb, np.array([0, 133, 77]), np.array([255, 173, 127]))
+            skin_mask = cv2.inRange(ycrcb, np.array([0, 130, 70]), np.array([255, 180, 135]))
             mask = skin_mask
         
-        mask = cv2.GaussianBlur(mask, (21, 21), 11)
+        closing_kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))
+        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, closing_kernel, iterations=2)
+        
+        mask = cv2.GaussianBlur(mask, (31, 31), 15)
         
         return mask
     
@@ -199,21 +197,28 @@ class SkinSmoothingFilter:
         result = image.copy()
         mask_binary = (mask > 128).astype(np.uint8)
         
+        total_blemish_mask = np.zeros(gray.shape, dtype=np.uint8)
+        
         for contour in contours:
             area = cv2.contourArea(contour)
-            if 5 < area < 100:
+            
+            if 3 < area < 200:
+                
                 x, y, w, h = cv2.boundingRect(contour)
                 
+                # Check if the blemish is mostly inside the skin mask
                 if mask_binary[y:y+h, x:x+w].mean() > 0.5:
-                    roi = result[max(0, y-5):y+h+5, max(0, x-5):x+w+5]
-                    if roi.size > 0:
-                        inpainted = cv2.inpaint(result, blemish_candidates, 3, cv2.INPAINT_TELEA)
-                        result[y:y+h, x:x+w] = inpainted[y:y+h, x:x+w]
+                    # Add this contour to our total mask
+                    cv2.drawContours(total_blemish_mask, [contour], -1, 255, -1)
+
+        # Now, inpaint everything at once
+        if np.any(total_blemish_mask):
+            result = cv2.inpaint(result, total_blemish_mask, 3, cv2.INPAINT_TELEA)
         
         return result
     
     def adjust_brightness_contrast(self, image: np.ndarray, brightness: float = 1.0, 
-                                   contrast: float = 1.0) -> np.ndarray:
+                                     contrast: float = 1.0) -> np.ndarray:
         # Adjust image brightness and contrast in LAB color space
         lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
         l, a, b = cv2.split(lab)
@@ -262,7 +267,7 @@ class SkinSmoothingFilter:
         return image
     
     def sharpen_details(self, image: np.ndarray, amount: float = 0.3, 
-                       mask: Optional[np.ndarray] = None) -> np.ndarray:
+                        mask: Optional[np.ndarray] = None) -> np.ndarray:
         # Apply selective sharpening to non-skin areas like eyes and hair
         if mask is not None:
             inverse_mask = 255 - mask
@@ -282,7 +287,7 @@ class SkinSmoothingFilter:
         return np.clip(result, 0, 255).astype(np.uint8)
     
     def apply_beauty_filter(self, image_path: str, output_path: str,
-                          config: Optional[BeautyConfig] = None) -> bool:
+                            config: Optional[BeautyConfig] = None) -> bool:
         # Main pipeline: detect face, create skin mask, smooth, enhance, and save
         if config is None:
             config = BeautyConfig()
@@ -297,14 +302,14 @@ class SkinSmoothingFilter:
             if image_bgr is None:
                 raise ValueError(f"Cannot load image: {image_path}")
             
-            print(f"   Image shape: {image_bgr.shape}")
+            print(f"    Image shape: {image_bgr.shape}")
             
             print("Detecting face landmarks...")
             landmarks = self.get_landmarks(image_bgr)
             if landmarks is not None:
-                print(f"   Detected {len(landmarks)} landmarks")
+                print(f"    Detected {len(landmarks)} landmarks")
             else:
-                print("   No landmarks detected, processing full image")
+                print("    No landmarks detected, processing full image")
             
             print("Creating skin mask...")
             skin_mask = self.create_skin_mask(image_bgr, landmarks)
@@ -319,14 +324,18 @@ class SkinSmoothingFilter:
             smoothed = self.edge_preserving_smooth(result, config.smooth_strength)
             
             print("Applying guided filter...")
-            for _ in range(2):
-                smoothed = self.guided_filter(smoothed, result, radius=8, eps=0.01)
+            strong_radius = 12
+            strong_eps = 0.02
+            
+            for _ in range(3): # Increased from 2 to 3 iterations
+                smoothed = self.guided_filter(smoothed, result, 
+                                              radius=strong_radius, eps=strong_eps)
             
             print("Blending smoothed skin...")
             mask_norm = skin_mask.astype(np.float32) / 255.0
             for c in range(3):
                 result[:, :, c] = (mask_norm * smoothed[:, :, c].astype(np.float32) + 
-                                 (1 - mask_norm) * result[:, :, c].astype(np.float32))
+                                  (1 - mask_norm) * result[:, :, c].astype(np.float32))
             result = result.astype(np.uint8)
             
             print("Balancing skin tone...")
@@ -352,7 +361,8 @@ class SkinSmoothingFilter:
             import traceback
             traceback.print_exc()
             return False
-        
+
+
 PRESET_CONFIGS = {
     'subtle': BeautyConfig(
         smooth_strength=0.4,
@@ -377,17 +387,27 @@ PRESET_CONFIGS = {
         sharpen_amount=0.4,
         skin_tone_balance=0.20,
         blemish_removal=True
+    ),
+    'intense': BeautyConfig(
+        smooth_strength=2.5,
+        brightness_boost=1.05,
+        contrast_adjustment=1.02,
+        sharpen_amount=0.2,
+        skin_tone_balance=0.25,
+        blemish_removal=True
     )
 }
 
+
 if __name__ == "__main__":
-    INPUT_IMAGE = "/Users/zheng/Desktop/CIS5810Project/Shi-2631-1.jpg"
-    OUTPUT_IMAGE = "/Users/zheng/Desktop/CIS5810Project/Shi-beauty.png"
+    INPUT_IMAGE = "/Users/zheng/Desktop/CIS5810Project/trysmoothing.webp"
+    OUTPUT_IMAGE = "/Users/zheng/Desktop/CIS5810Project/testsmooth.png"
     
     print("\nInitializing Beauty Filter...")
-    beauty_filter = SkinSmoothingFilter(device='cpu')
+    beauty_filter = SkinSmoothingFilter(device='cpu') 
     
-    config = PRESET_CONFIGS['strong']
+    config = PRESET_CONFIGS['intense']
+
     success = beauty_filter.apply_beauty_filter(INPUT_IMAGE, OUTPUT_IMAGE, config)
     
     if success:
