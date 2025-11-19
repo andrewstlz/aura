@@ -400,8 +400,8 @@ PRESET_CONFIGS = {
 
 
 if __name__ == "__main__":
-    INPUT_IMAGE = "/Users/zheng/Desktop/CIS5810Project/trysmoothing.webp"
-    OUTPUT_IMAGE = "/Users/zheng/Desktop/CIS5810Project/testsmooth.png"
+    INPUT_IMAGE = "/Users/zheng/Desktop/CIS5810Project/Shi-2631-1.jpg"
+    OUTPUT_IMAGE = "/Users/zheng/Desktop/CIS5810Project/Shi_smoothed_final.png"
     
     print("\nInitializing Beauty Filter...")
     beauty_filter = SkinSmoothingFilter(device='cpu') 
