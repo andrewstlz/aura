@@ -2,7 +2,7 @@
 *your digital mirror, sprinkled with magic*  
 
 ## how it works 🫆
-Aura integrates multiple pretrained computer vision models into a cohesive editing pipeline. Users input images through a web interface, select desired enhancements via natural language or UI controls, and receive processed results in real-time. The natural language command is first processed by an intent recognition model to map the request (e.g. 'make my face slimmer') to the specific Core Processing Path (e.g. face reshaping). Each module operates independently, allowing users to apply single or combined effects while maintaining interactive performance.
+Aura integrates multiple pretrained computer vision models into a cohesive editing pipeline. Users input images through a web interface, select desired enhancements via natural language or UI controls, and receive processed results in rapidly. The natural language command is first processed by an intent recognition model to map the request (e.g. 'make my face slimmer') to the specific Core Processing Path (e.g. face reshaping). Each module operates independently, allowing users to apply single or combined effects while maintaining interactive performance.
 
 ## why aura is just different 🪄
 - not just "another AI beauty app" - actually powered by convolutional neural networks and advanced face landmark detection.
