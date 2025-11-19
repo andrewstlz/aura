@@ -278,13 +278,13 @@ PRESET_CONFIGS = {
 
 
 if __name__ == "__main__":
-    INPUT_IMAGE = "/Users/zheng/Downloads/Shi-2631-1.jpg"
-    OUTPUT_IMAGE = "/Users/zheng/Desktop/CIS5810Project/Shi-New-reshaped.png"
+    INPUT_IMAGE = "/Users/zheng/Desktop/CIS5810Project/Shi-2631-1.jpg"
+    OUTPUT_IMAGE = "/Users/zheng/Desktop/CIS5810Project/Shi-New-reshaped(cleaned).png"
     
     print("\nInitializing Face Reshaper...")
     reshaper = OpticalFlowReshaper(device='cpu')
     
-    config = PRESET_CONFIGS['natural']
+    config = PRESET_CONFIGS['subtle']
     success = reshaper.reshape_face(INPUT_IMAGE, OUTPUT_IMAGE, config)
     
     if success:
