@@ -1,6 +1,6 @@
 """
 Natural Language Interface for Aura Photo Editing Pipeline
-Converts natural language requests to structured parameters using GPT-4.1 nano
+Converts natural language requests to structured parameters using GPT-4.1-nano
 """
 
 import json
