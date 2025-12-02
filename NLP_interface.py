@@ -123,7 +123,7 @@ Lipstick colors:
                     "Content-Type": "application/json"
                 },
                 json={
-                    "model": "gpt-4o-mini",
+                    "model": "gpt-4o-nano",
                     "messages": messages,
                     "temperature": 0.3,
                     "max_tokens": 800
