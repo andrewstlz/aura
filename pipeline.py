@@ -7,7 +7,7 @@ from face_reshape import OpticalFlowReshaper, ReshapeConfig
 from virtual_makeup import VirtualMakeup, MakeupConfig
 from background_removal import load_model as load_bg_model, process_image as remove_bg
 from blend_background import apply_background_replacement
-from smile_transfer import transfer_smile  # must exist
+from smile_transfer import SmileTransfer, SmileConfig
 
 
 def run_aura_pipeline(input_path: str, output_path: str, params: dict):

@@ -9,8 +9,13 @@ import json
 from NLP_interface import NaturalLanguageInterface
 from pipeline import run_aura_pipeline
 
-# Replace with environment variable later
-API_KEY = "YOUR_OPENAI_API_KEY"
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+API_KEY = os.getenv("OPENAI_API_KEY")
+print("Loaded API key:", "YES" if API_KEY else "NO")
 
 # Initialize NLP engine
 nlp_engine = NaturalLanguageInterface(api_key=API_KEY)
