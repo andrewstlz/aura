@@ -9,7 +9,7 @@ from background_removal import load_model as load_bg_model, process_image as rem
 from blend_background import apply_background_replacement
 from blur_background import BackgroundBlur, BlurConfig, PRESET_BLUR
 from color_grading import ColorGradingFilters, ColorGradingConfig, PRESET_FILTERS
-from smile_transfer import SmileTransfer, SmileConfig, PRESET_SMILES
+from smile_transfer import SmileTransfer, SmileConfig
 import cv2
 import numpy as np
 
@@ -160,23 +160,18 @@ def run_aura_pipeline(input_path: str, output_path: str, params: dict):
             smiler = SmileTransfer()
             
             # Get landmarks for target image
-            from skin_smoothing import SkinSmoothingFilter
             landmark_detector = SkinSmoothingFilter(device="cpu")
             target_landmarks = landmark_detector.get_landmarks(target_img)
             
             if target_landmarks is None:
                 raise ValueError("Could not detect face in target image")
             
-            # Use preset if specified
-            if smile_cfg.get("preset"):
-                config = PRESET_SMILES.get(smile_cfg["preset"], SmileConfig())
-            else:
-                config = SmileConfig(
-                    intensity=smile_cfg.get("intensity", 1.0),
-                    blend_method=smile_cfg.get("blend_method", "seamless"),
-                    feather_amount=smile_cfg.get("feather_amount", 20),
-                    reference_image=smile_source
-                )
+            config = SmileConfig(
+                intensity=smile_cfg.get("intensity", 1.0),
+                blend_method=smile_cfg.get("blend_method", "seamless"),
+                feather_amount=smile_cfg.get("feather_amount", 20),
+                reference_image=smile_source
+            )
             
             # Apply smile transfer
             result_img = smiler.apply_smile(
@@ -321,6 +316,8 @@ def run_aura_pipeline(input_path: str, output_path: str, params: dict):
     # ------------------------------------
     # 9. SAVE FINAL RESULT
     # ------------------------------------
-    print("STEP 9 – Saving final result")
+    print("STEP 9 - Saving final result")
     
-    os.rename(working, output_path)
+    if os.path.exists(output_path):
+        os.remove(output_path)
+    os.replace(working, output_path)
