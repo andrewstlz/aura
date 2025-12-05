@@ -31,6 +31,7 @@ JSON Structure:
     "smoothing": boolean,
     "color_grading": boolean,
     "background_blur": boolean,
+    "smile_transfer": boolean,
     "background_replacement": boolean
   },
   "enhancement_params": {
@@ -70,6 +71,11 @@ JSON Structure:
     "blur_type": string ("gaussian"/"lens"/"bokeh"),
     "edge_softness": int (1-50)
   },
+  "smile_config": {
+    "preset": string ("subtle"/"natural"/"strong"/"soft") or null,
+    "intensity": float (0.0-1.0),
+    "reference_image": string or null
+  },
   "background_config": {
     "background_path": string or null
   }
@@ -87,10 +93,16 @@ Input: "natural makeup with blurred background"
 Output: {"features":{"enhancement":false,"makeup":true,"reshape":false,"smoothing":false,"color_grading":false,"background_blur":true,"background_replacement":false},"enhancement_params":{},"makeup_config":{"preset":"natural","lipstick_color":[200,80,90],"lipstick_intensity":0.5,"blush_intensity":0.25,"eyeshadow_intensity":0.3,"eyeliner_thickness":2,"eyebrow_intensity":0.2},"reshape_config":{},"beauty_config":{},"color_grading_config":{},"blur_config":{"preset":"moderate","blur_strength":25,"blur_type":"lens","edge_softness":15},"background_config":{}}
 
 Input: "strong background blur with cinematic filter"
-Output: {"features":{"enhancement":false,"makeup":false,"reshape":false,"smoothing":false,"color_grading":true,"background_blur":true,"background_replacement":false},"enhancement_params":{},"makeup_config":{},"reshape_config":{},"beauty_config":{},"color_grading_config":{"filter_name":"cinematic","intensity":0.8},"blur_config":{"preset":"strong","blur_strength":35,"blur_type":"bokeh","edge_softness":12},"background_config":{}}
+Output: {"features":{"enhancement":false,"makeup":false,"reshape":false,"smoothing":false,"color_grading":true,"background_blur":true,"smile_transfer":false,"background_replacement":false},"enhancement_params":{},"makeup_config":{},"reshape_config":{},"beauty_config":{},"color_grading_config":{"filter_name":"cinematic","intensity":0.8},"blur_config":{"preset":"strong","blur_strength":35,"blur_type":"bokeh","edge_softness":12},"smile_config":{},"background_config":{}}
+
+Input: "add a smile"
+Output: {"features":{"enhancement":false,"makeup":false,"reshape":false,"smoothing":false,"color_grading":false,"background_blur":false,"smile_transfer":true,"background_replacement":false},"enhancement_params":{},"makeup_config":{},"reshape_config":{},"beauty_config":{},"color_grading_config":{},"blur_config":{},"smile_config":{"preset":"natural","intensity":0.7},"background_config":{}}
+
+Input: "natural makeup with smile"
+Output: {"features":{"enhancement":false,"makeup":true,"reshape":false,"smoothing":false,"color_grading":false,"background_blur":false,"smile_transfer":true,"background_replacement":false},"enhancement_params":{},"makeup_config":{"preset":"natural","lipstick_color":[200,80,90],"lipstick_intensity":0.5,"blush_intensity":0.25,"eyeshadow_intensity":0.3,"eyeliner_thickness":2,"eyebrow_intensity":0.2},"reshape_config":{},"beauty_config":{},"color_grading_config":{},"blur_config":{},"smile_config":{"preset":"natural","intensity":0.7},"background_config":{}}
 
 Input: "slim my face, smooth skin, add pink lipstick"
-Output: {"features":{"enhancement":false,"makeup":true,"reshape":true,"smoothing":true,"color_grading":false,"background_blur":false,"background_replacement":false},"enhancement_params":{},"makeup_config":{"preset":null,"lipstick_color":[255,150,170],"lipstick_intensity":0.7,"blush_intensity":0.0,"eyeshadow_intensity":0.0,"eyeliner_thickness":0,"eyebrow_intensity":0.0},"reshape_config":{"preset":null,"slim_factor":0.08,"eye_factor":0.0,"chin_factor":0.0,"nose_factor":0.0},"beauty_config":{"preset":null,"smooth_strength":0.8,"brightness_boost":1.05,"blemish_removal":true},"color_grading_config":{},"blur_config":{},"background_config":{}}
+Output: {"features":{"enhancement":false,"makeup":true,"reshape":true,"smoothing":true,"color_grading":false,"background_blur":false,"smile_transfer":false,"background_replacement":false},"enhancement_params":{},"makeup_config":{"preset":null,"lipstick_color":[255,150,170],"lipstick_intensity":0.7,"blush_intensity":0.0,"eyeshadow_intensity":0.0,"eyeliner_thickness":0,"eyebrow_intensity":0.0},"reshape_config":{"preset":null,"slim_factor":0.08,"eye_factor":0.0,"chin_factor":0.0,"nose_factor":0.0},"beauty_config":{"preset":null,"smooth_strength":0.8,"brightness_boost":1.05,"blemish_removal":true},"color_grading_config":{},"blur_config":{},"smile_config":{},"background_config":{}}
 
 Intensity: "a little"→0.1-0.3, "moderately"→0.4-0.6, "hard"/"strong"→0.7-0.9, "extremely"→0.9-1.0
 
@@ -105,6 +117,13 @@ Background Blur Keywords:
 - "slight blur"/"subtle blur": preset="subtle"
 - "strong blur"/"heavy blur"/"dramatic blur": preset="strong" or "dramatic"
 - "DSLR effect"/"professional blur"/"camera blur": preset="portrait", blur_type="lens"
+
+Smile Transfer Keywords:
+- "add smile"/"add a smile"/"make me smile": smile_transfer=true, preset="natural"
+- "smile"/"smiling": smile_transfer=true, preset="natural"
+- "big smile"/"wide smile"/"strong smile": smile_transfer=true, preset="strong"
+- "subtle smile"/"slight smile"/"soft smile": smile_transfer=true, preset="subtle"
+- "natural smile": smile_transfer=true, preset="natural"
 
 Background Replace: "replace background"/"change background"→background_replacement=true
 
@@ -216,6 +235,7 @@ Remember: Output ONLY the JSON object, nothing else."""
                 "smoothing": True,
                 "color_grading": False,
                 "background_blur": False,
+                "smile_transfer": False,
                 "background_replacement": False
             },
             "enhancement_params": {},
@@ -229,6 +249,7 @@ Remember: Output ONLY the JSON object, nothing else."""
             },
             "color_grading_config": {},
             "blur_config": {},
+            "smile_config": {},
             "background_config": {}
         }
     
@@ -248,7 +269,7 @@ Remember: Output ONLY the JSON object, nothing else."""
         
         features = params["features"]
         for key in ["enhancement", "makeup", "reshape", "smoothing", "color_grading", 
-                    "background_blur", "background_replacement"]:
+                    "background_blur", "smile_transfer", "background_replacement"]:
             if key not in features:
                 features[key] = False
         
@@ -303,6 +324,11 @@ Remember: Output ONLY the JSON object, nothing else."""
             if "edge_softness" in bc:
                 bc["edge_softness"] = max(1, min(50, int(bc["edge_softness"])))
         
+        if "smile_config" in params and params["smile_config"]:
+            sc = params["smile_config"]
+            if "intensity" in sc:
+                sc["intensity"] = max(0.0, min(1.0, float(sc["intensity"])))
+        
         return params
     
     def print_summary(self, params: Dict[str, Any]):
@@ -327,6 +353,14 @@ Remember: Output ONLY the JSON object, nothing else."""
                 print(f"  Strength: {bc['blur_strength']}")
             if "blur_type" in bc:
                 print(f"  Type: {bc['blur_type']}")
+        
+        if features.get("smile_transfer") and params.get("smile_config"):
+            sc = params["smile_config"]
+            print("\nSmile Transfer:")
+            if sc.get("preset"):
+                print(f"  Preset: {sc['preset']}")
+            if "intensity" in sc:
+                print(f"  Intensity: {sc['intensity']:.2f}")
         
         if features.get("background_replacement") and params.get("background_config"):
             bg = params["background_config"]
