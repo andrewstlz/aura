@@ -1,7 +1,9 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap");
+
 /* Sunset gradient background */
 body {
   margin: 0;
-  font-family: "Inter", sans-serif;
+  font-family: "DM Sans", "Segoe UI", sans-serif;
   background: linear-gradient(135deg, #ff7e5f 0%, #fec7b4 100%);
   min-height: 100vh;
   color: #3c2a4d;

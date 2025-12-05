@@ -15,24 +15,33 @@ export default function App() {
     if (!uploadedImage || !nlpParams) return;
     setLoading(true);
 
-    const form = new FormData();
-    form.append("image", uploadedImage);
-    form.append("params", JSON.stringify(nlpParams));
+    try {
+      const form = new FormData();
+      form.append("image", uploadedImage);
+      form.append("params", JSON.stringify(nlpParams));
 
-    const res = await fetch("http://localhost:8000/process", {
-      method: "POST",
-      body: form,
-    });
+      const res = await fetch("http://localhost:8000/process", {
+        method: "POST",
+        body: form,
+      });
 
-    const blob = await res.blob();
-    setProcessedImage(URL.createObjectURL(blob));
+      if (!res.ok) {
+        throw new Error(`Process failed (${res.status})`);
+      }
 
-    setLoading(false);
+      const blob = await res.blob();
+      setProcessedImage(URL.createObjectURL(blob));
+    } catch (err: any) {
+      console.error(err);
+      alert(err?.message || "Processing failed. Check backend logs.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="app-container">
-      <h1>Aura ✨</h1>
+      <h1>Welcome to AURA ✨</h1>
 
       <div className="card">
         <ImageUpload onUpload={setUploadedImage} />
