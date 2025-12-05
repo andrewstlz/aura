@@ -30,6 +30,7 @@ JSON Structure:
     "reshape": boolean,
     "smoothing": boolean,
     "color_grading": boolean,
+    "background_blur": boolean,
     "background_replacement": boolean
   },
   "enhancement_params": {
@@ -63,6 +64,12 @@ JSON Structure:
     "filter_name": string ("warm_sunset"/"cool_blue"/"vintage_film"/"high_contrast"/"soft_pastel"/"cinematic"/"moody_dark"/"bright_airy") or null,
     "intensity": float (0.0-1.0)
   },
+  "blur_config": {
+    "preset": string ("subtle"/"moderate"/"strong"/"portrait"/"dramatic") or null,
+    "blur_strength": int (5-51, odd numbers),
+    "blur_type": string ("gaussian"/"lens"/"bokeh"),
+    "edge_softness": int (1-50)
+  },
   "background_config": {
     "background_path": string or null
   }
@@ -70,36 +77,36 @@ JSON Structure:
 
 Examples:
 
-Input: "slim my face a little, smooth my face hard, add pink lipstick"
-Output: {"features":{"enhancement":false,"makeup":true,"reshape":true,"smoothing":true,"color_grading":false,"background_replacement":false},"enhancement_params":{},"makeup_config":{"preset":null,"lipstick_color":[255,150,170],"lipstick_intensity":0.7,"blush_intensity":0.0,"eyeshadow_intensity":0.0,"eyeliner_thickness":0,"eyebrow_intensity":0.0},"reshape_config":{"preset":null,"slim_factor":0.08,"eye_factor":0.0,"chin_factor":0.0,"nose_factor":0.0},"beauty_config":{"preset":null,"smooth_strength":0.8,"brightness_boost":1.05,"blemish_removal":true},"color_grading_config":{},"background_config":{}}
+Input: "blur the background"
+Output: {"features":{"enhancement":false,"makeup":false,"reshape":false,"smoothing":false,"color_grading":false,"background_blur":true,"background_replacement":false},"enhancement_params":{},"makeup_config":{},"reshape_config":{},"beauty_config":{},"color_grading_config":{},"blur_config":{"preset":"moderate","blur_strength":25,"blur_type":"lens","edge_softness":15},"background_config":{}}
 
-Input: "apply warm filter"
-Output: {"features":{"enhancement":false,"makeup":false,"reshape":false,"smoothing":false,"color_grading":true,"background_replacement":false},"enhancement_params":{},"makeup_config":{},"reshape_config":{},"beauty_config":{},"color_grading_config":{"filter_name":"warm_sunset","intensity":0.8},"background_config":{}}
+Input: "portrait mode effect"
+Output: {"features":{"enhancement":false,"makeup":false,"reshape":false,"smoothing":false,"color_grading":false,"background_blur":true,"background_replacement":false},"enhancement_params":{},"makeup_config":{},"reshape_config":{},"beauty_config":{},"color_grading_config":{},"blur_config":{"preset":"portrait","blur_strength":31,"blur_type":"lens","edge_softness":18},"background_config":{}}
 
-Input: "make it look cinematic"
-Output: {"features":{"enhancement":false,"makeup":false,"reshape":false,"smoothing":false,"color_grading":true,"background_replacement":false},"enhancement_params":{},"makeup_config":{},"reshape_config":{},"beauty_config":{},"color_grading_config":{"filter_name":"cinematic","intensity":0.8},"background_config":{}}
+Input: "natural makeup with blurred background"
+Output: {"features":{"enhancement":false,"makeup":true,"reshape":false,"smoothing":false,"color_grading":false,"background_blur":true,"background_replacement":false},"enhancement_params":{},"makeup_config":{"preset":"natural","lipstick_color":[200,80,90],"lipstick_intensity":0.5,"blush_intensity":0.25,"eyeshadow_intensity":0.3,"eyeliner_thickness":2,"eyebrow_intensity":0.2},"reshape_config":{},"beauty_config":{},"color_grading_config":{},"blur_config":{"preset":"moderate","blur_strength":25,"blur_type":"lens","edge_softness":15},"background_config":{}}
 
-Input: "vintage look with natural makeup"
-Output: {"features":{"enhancement":false,"makeup":true,"reshape":false,"smoothing":false,"color_grading":true,"background_replacement":false},"enhancement_params":{},"makeup_config":{"preset":"natural","lipstick_color":[200,80,90],"lipstick_intensity":0.5,"blush_intensity":0.25,"eyeshadow_intensity":0.3,"eyeliner_thickness":2,"eyebrow_intensity":0.2},"reshape_config":{},"beauty_config":{},"color_grading_config":{"filter_name":"vintage_film","intensity":0.8},"background_config":{}}
+Input: "strong background blur with cinematic filter"
+Output: {"features":{"enhancement":false,"makeup":false,"reshape":false,"smoothing":false,"color_grading":true,"background_blur":true,"background_replacement":false},"enhancement_params":{},"makeup_config":{},"reshape_config":{},"beauty_config":{},"color_grading_config":{"filter_name":"cinematic","intensity":0.8},"blur_config":{"preset":"strong","blur_strength":35,"blur_type":"bokeh","edge_softness":12},"background_config":{}}
 
-Input: "replace background with beach"
-Output: {"features":{"enhancement":false,"makeup":false,"reshape":false,"smoothing":false,"color_grading":false,"background_replacement":true},"enhancement_params":{},"makeup_config":{},"reshape_config":{},"beauty_config":{},"color_grading_config":{},"background_config":{"background_path":"beach"}}
+Input: "slim my face, smooth skin, add pink lipstick"
+Output: {"features":{"enhancement":false,"makeup":true,"reshape":true,"smoothing":true,"color_grading":false,"background_blur":false,"background_replacement":false},"enhancement_params":{},"makeup_config":{"preset":null,"lipstick_color":[255,150,170],"lipstick_intensity":0.7,"blush_intensity":0.0,"eyeshadow_intensity":0.0,"eyeliner_thickness":0,"eyebrow_intensity":0.0},"reshape_config":{"preset":null,"slim_factor":0.08,"eye_factor":0.0,"chin_factor":0.0,"nose_factor":0.0},"beauty_config":{"preset":null,"smooth_strength":0.8,"brightness_boost":1.05,"blemish_removal":true},"color_grading_config":{},"blur_config":{},"background_config":{}}
 
 Intensity: "a little"→0.1-0.3, "moderately"→0.4-0.6, "hard"/"strong"→0.7-0.9, "extremely"→0.9-1.0
 
 Lipstick: "pink"→[255,150,170], "red"→[180,38,45], "bold red"→[160,20,30], "nude"→[220,120,130]
 
-Color Grading Keywords:
-- "warm"/"golden hour"/"sunset"/"orange tones": filter_name="warm_sunset"
-- "cool"/"blue tones"/"cold"/"cyan": filter_name="cool_blue"
-- "vintage"/"retro"/"film"/"old photo": filter_name="vintage_film"
-- "high contrast"/"dramatic"/"punchy": filter_name="high_contrast"
-- "pastel"/"soft colors"/"dreamy": filter_name="soft_pastel"
-- "cinematic"/"movie"/"film look": filter_name="cinematic"
-- "moody"/"dark"/"dramatic dark": filter_name="moody_dark"
-- "bright"/"airy"/"light"/"clean": filter_name="bright_airy"
+Color Grading: "warm"→warm_sunset, "cool"→cool_blue, "vintage"→vintage_film, "cinematic"→cinematic, etc.
 
-Background: "beach"/"nature"/"city"/"studio" or null
+Background Blur Keywords:
+- "blur background"/"blurred background"/"blur the background": background_blur=true, preset="moderate"
+- "portrait mode"/"portrait effect"/"depth effect": background_blur=true, preset="portrait"
+- "bokeh"/"bokeh effect"/"bokeh blur": background_blur=true, blur_type="bokeh"
+- "slight blur"/"subtle blur": preset="subtle"
+- "strong blur"/"heavy blur"/"dramatic blur": preset="strong" or "dramatic"
+- "DSLR effect"/"professional blur"/"camera blur": preset="portrait", blur_type="lens"
+
+Background Replace: "replace background"/"change background"→background_replacement=true
 
 Remember: Output ONLY the JSON object, nothing else."""
 
@@ -150,13 +157,11 @@ Remember: Output ONLY the JSON object, nothing else."""
     def _extract_json(self, content: str) -> Dict[str, Any]:
         """Extract JSON from response using multiple strategies"""
         
-        # Strategy 1: Direct parse
         try:
             return json.loads(content)
         except json.JSONDecodeError:
             pass
         
-        # Strategy 2: Remove markdown
         if '```json' in content:
             try:
                 json_str = content.split('```json')[1].split('```')[0].strip()
@@ -171,7 +176,6 @@ Remember: Output ONLY the JSON object, nothing else."""
             except:
                 pass
         
-        # Strategy 3: Find JSON with regex
         try:
             match = re.search(r'\{.*\}', content, re.DOTALL)
             if match:
@@ -179,7 +183,6 @@ Remember: Output ONLY the JSON object, nothing else."""
         except:
             pass
         
-        # Strategy 4: Extract valid JSON substring
         try:
             stack = []
             start_idx = None
@@ -212,6 +215,7 @@ Remember: Output ONLY the JSON object, nothing else."""
                 "reshape": False,
                 "smoothing": True,
                 "color_grading": False,
+                "background_blur": False,
                 "background_replacement": False
             },
             "enhancement_params": {},
@@ -224,6 +228,7 @@ Remember: Output ONLY the JSON object, nothing else."""
                 "blemish_removal": True
             },
             "color_grading_config": {},
+            "blur_config": {},
             "background_config": {}
         }
     
@@ -237,11 +242,13 @@ Remember: Output ONLY the JSON object, nothing else."""
                 "reshape": False,
                 "smoothing": False,
                 "color_grading": False,
+                "background_blur": False,
                 "background_replacement": False
             }
         
         features = params["features"]
-        for key in ["enhancement", "makeup", "reshape", "smoothing", "color_grading", "background_replacement"]:
+        for key in ["enhancement", "makeup", "reshape", "smoothing", "color_grading", 
+                    "background_blur", "background_replacement"]:
             if key not in features:
                 features[key] = False
         
@@ -285,6 +292,17 @@ Remember: Output ONLY the JSON object, nothing else."""
             if "intensity" in cg:
                 cg["intensity"] = max(0.0, min(1.0, float(cg["intensity"])))
         
+        if "blur_config" in params and params["blur_config"]:
+            bc = params["blur_config"]
+            if "blur_strength" in bc:
+                strength = max(5, min(51, int(bc["blur_strength"])))
+                # Ensure odd number
+                if strength % 2 == 0:
+                    strength += 1
+                bc["blur_strength"] = strength
+            if "edge_softness" in bc:
+                bc["edge_softness"] = max(1, min(50, int(bc["edge_softness"])))
+        
         return params
     
     def print_summary(self, params: Dict[str, Any]):
@@ -299,6 +317,16 @@ Remember: Output ONLY the JSON object, nothing else."""
         print(f"\nFeatures to apply: {len(enabled)}")
         for feature in enabled:
             print(f"  ✓ {feature.replace('_', ' ').capitalize()}")
+        
+        if features.get("background_blur") and params.get("blur_config"):
+            bc = params["blur_config"]
+            print("\nBackground Blur:")
+            if bc.get("preset"):
+                print(f"  Preset: {bc['preset']}")
+            if "blur_strength" in bc:
+                print(f"  Strength: {bc['blur_strength']}")
+            if "blur_type" in bc:
+                print(f"  Type: {bc['blur_type']}")
         
         if features.get("background_replacement") and params.get("background_config"):
             bg = params["background_config"]
